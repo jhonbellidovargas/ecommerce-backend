@@ -1,12 +1,21 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
+import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -18,24 +27,47 @@ export class ProductsService {
       await this.productRepository.save(product);
       return product;
     } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException('Something went wrong');
+      this.handleException(error);
     }
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    return this.productRepository.find({
+      take: limit,
+      skip: offset,
+      // TODO: relations: ['category'],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const product = await this.productRepository.findOneBy({ id: id });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
+  async update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    const product = await this.findOne(id);
+    await this.productRepository.remove(product);
+  }
+
+  private handleException(error: any) {
+    if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    } else if (error.code === '22P02') {
+      throw new BadRequestException('Invalid input syntax for type integer');
+    } else if (error.code === '23503') {
+      throw new BadRequestException(
+        'This product is associated with existing orders',
+      );
+    }
+    this.logger.error(error);
+    throw new InternalServerErrorException('Unexpected error');
   }
 }
