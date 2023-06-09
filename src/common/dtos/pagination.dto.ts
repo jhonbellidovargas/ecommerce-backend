@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsPositive, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
 
 export class PaginationDto {
   @IsOptional()
@@ -10,6 +10,7 @@ export class PaginationDto {
 
   @IsOptional()
   @Min(0)
+  @IsNumber()
   // Transform
   @Type(() => Number) // Igual a enableImplicitConversion: true
   offset?: number;
