@@ -66,8 +66,7 @@ export class ProductsService {
       id: id,
       ...updateProductDto,
     });
-    if (!product)
-      throw new NotFoundException(`Product with id ${id} not found`);
+    if (!product) throw new NotFoundException(`Product with id ${id} not found`);
 
     try {
       return await this.productRepository.save(product);
@@ -91,6 +90,7 @@ export class ProductsService {
         'This product is associated with existing orders',
       );
     }
+
     this.logger.error(error);
     throw new InternalServerErrorException('Unexpected error');
   }
