@@ -25,7 +25,7 @@
 
 1. Clona el repositorio
 2. ```yarn install```
-3, Clonar el ```.env.example``` y renombrarlo a ```.env```
+3. Clonar el ```.env.example``` y renombrarlo a ```.env```
 4. Configurar las variables de entorno
 5. Levantar base de datos con docker-compose
 ```
