@@ -120,6 +120,7 @@ export class ProductsService {
       await queryRunner.commitTransaction();
       await queryRunner.release();
 
+      // Before to update with product Image
       // return await this.productRepository.save(product);
       return this.findOnePlain(id);
     } catch (error) {
