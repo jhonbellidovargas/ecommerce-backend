@@ -16,6 +16,7 @@ import { ProductImage, Product } from './entities';
 
 @Injectable()
 export class ProductsService {
+  [x: string]: any;
   private readonly logger = new Logger(ProductsService.name);
 
   constructor(
@@ -124,6 +125,7 @@ export class ProductsService {
       // return await this.productRepository.save(product);
       return this.findOnePlain(id);
     } catch (error) {
+      // Since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
       this.handleException(error);
@@ -148,5 +150,14 @@ export class ProductsService {
 
     this.logger.error(error);
     throw new InternalServerErrorException('Unexpected error');
+  }
+
+  async deleteAllProducts() {
+    const query = this.productRepository.createQueryBuilder('product');
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      this.handleBBExeptions(error);
+    }
   }
 }
